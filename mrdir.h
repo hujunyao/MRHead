@@ -44,22 +44,28 @@ static bool exist(const char*filepath){return (_access(filepath, 0)) != -1;}
 #if _UNICODE
 static wchar_t * ANSIToUnicode(const char* str)
 {
+	if (!str)
+		return NULL;
 	int textlen;
 	wchar_t * result;
 	textlen = MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, 0);
 	result = (wchar_t *)malloc((textlen + 1)*sizeof(wchar_t));
 	memset(result, 0, (textlen + 1)*sizeof(wchar_t));
 	MultiByteToWideChar(CP_ACP, 0, str, -1, (LPWSTR)result, textlen);
+	result[textlen] = '\0';
 	return result;
 }
 static char * UnicodeToANSI(const wchar_t* str)
 {
+	if (!str)
+		return NULL;
 	char* result;
 	int textlen;
 	textlen = WideCharToMultiByte(CP_ACP, 0, str, -1, NULL, 0, NULL, NULL);
 	result = (char *)malloc((textlen + 1)*sizeof(char));
 	memset(result, 0, sizeof(char)* (textlen + 1));
 	WideCharToMultiByte(CP_ACP, 0, str, -1, result, textlen, NULL, NULL);
+	result[textlen] = '\0';
 	return result;
 }
 static wchar_t * UTF8ToUnicode(const char* str)
@@ -104,7 +110,9 @@ static std::vector<std::string> getAllSubdirs(std::string strDir)
 	std::string file2find = strDir + "/*.*";
 	std::vector<std::string> subdirs;
 #if _UNICODE
-	hError = FindFirstFile(ANSIToUnicode(file2find.c_str()), &FindData);
+	wchar_t *p = ANSIToUnicode(file2find.c_str());
+	hError = FindFirstFile(p, &FindData);
+	delete[]p;
 #else
 	hError = FindFirstFile((LPCTSTR)file2find.c_str(), &FindData);
 #endif
@@ -128,7 +136,9 @@ static std::vector<std::string> getAllSubdirs(std::string strDir)
 			if (FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
 #if _UNICODE
-				subdirs.push_back(UnicodeToANSI(FindData.cFileName));
+				char*p = UnicodeToANSI(FindData.cFileName);
+				subdirs.push_back(p);
+				delete[]p;
 #else
 				subdirs.push_back(FindData.cFileName);
 #endif
@@ -151,7 +161,9 @@ static std::vector<std::string> getAllFilesinDir(std::string strDir, std::string
 	std::string file2find = strDir + "/" + ext;
 	std::vector<std::string> files;
 #if _UNICODE
-	hError = FindFirstFile(ANSIToUnicode(file2find.c_str()), &FindData);
+	wchar_t *p= ANSIToUnicode(file2find.c_str());
+	hError = FindFirstFile(p, &FindData);
+	delete[]p;
 #else
 	hError = FindFirstFile((LPCTSTR)file2find.c_str(), &FindData);
 #endif
@@ -174,7 +186,9 @@ static std::vector<std::string> getAllFilesinDir(std::string strDir, std::string
 			else if (!(FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 			{
 #if _UNICODE
-				files.push_back(UnicodeToANSI(FindData.cFileName));
+				char *p = UnicodeToANSI(FindData.cFileName);
+				files.push_back(p);
+				delete[]p;
 #else
 				files.push_back(FindData.cFileName);
 #endif
@@ -196,19 +210,18 @@ static std::vector<std::string> getAllSubdirs(std::string strDir)
 {
 	DIR *dp;
 	struct dirent *entry;
-	struct stat statbuf;
 	std::vector<std::string> subdirs;
 	if((dp = opendir(strDir.c_str())) == NULL)
-	{    
+	{
+		closedir(dp);
 		return subdirs;
 	}
 	while((entry = readdir(dp)) != NULL)
-	{  
-		lstat(entry->d_name, &statbuf);
-		if(S_IFDIR &statbuf.st_mode)
+	{
+		if (strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0)
+			continue;
+		if(entry->d_type==4)
 		{
-			if (strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0)  
-				continue;  
 			subdirs.push_back(entry->d_name); 
 		} 
 	} 
@@ -221,7 +234,8 @@ static std::vector<std::string>getAllFilesinDir(std::string strDir, std::string 
 	DIR *pDir;
 	std::vector<std::string> files;
 	pDir = opendir(strDir.c_str());  
-	if (pDir == NULL) {  
+	if (pDir == NULL) {
+		closedir(pDir);
 		return files;
 	}
 	while (NULL != (ent = readdir(pDir))) {  
