@@ -39,6 +39,8 @@ public:
 		std::string str = "";
 		if (inited==0&&img.data)
 		{
+			api.Clear();
+			api.ClearAdaptiveClassifier();
 			api.SetImage((uchar*)img.data, img.cols, img.rows, img.channels(), img.step);
 			char*ocrresult = api.GetUTF8Text();
 			str = ocrresult;
@@ -51,13 +53,12 @@ private:
 	tesseract::TessBaseAPI  api;
 	int inited = -1;
 	MRTessNumRecognier(){
-		api.SetPageSegMode(tesseract::PSM_SINGLE_CHAR);
 		inited = api.Init("", "eng");
 		api.SetVariable("tessedit_char_whitelist", "0123456789");
+		api.SetPageSegMode(tesseract::PSM_SINGLE_CHAR);
 	}
 	~MRTessNumRecognier()
 	{
-		api.Clear();
 		api.End();
 	}
 };
@@ -75,6 +76,8 @@ public:
 		std::string str = "";
 		if (inited == 0 && img.data)
 		{
+			api.Clear();
+			api.ClearAdaptiveClassifier();
 			api.SetImage((uchar*)img.data, img.cols, img.rows, img.channels(), img.step);
 			char*ocrresult = api.GetUTF8Text();
 			str = ocrresult;
@@ -88,12 +91,11 @@ private:
 	tesseract::TessBaseAPI  api;
 	int inited = -1;
 	MRTessChineseRecognier(){
-		api.SetPageSegMode(tesseract::PSM_SINGLE_CHAR);
 		inited=api.Init("", "chi_sim");
+		api.SetPageSegMode(tesseract::PSM_SINGLE_CHAR);
 	}
 	~MRTessChineseRecognier()
 	{
-		api.Clear();
 		api.End();
 	}
 };
@@ -125,6 +127,8 @@ public:
 		std::string str = "";
 		if (inited == 0 && img.data)
 		{
+			api.Clear();
+			api.ClearAdaptiveClassifier();
 			api.SetImage((uchar*)img.data, img.cols, img.rows, img.channels(), img.step);
 			char*ocrresult = api.GetUTF8Text();
 			str = ocrresult;
@@ -152,7 +156,6 @@ private:
 	int inited = -1;
 	~MRTesseract()
 	{
-		api.Clear();
 		api.End();
 	}
 };
