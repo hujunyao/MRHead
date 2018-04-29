@@ -75,7 +75,7 @@
 			#pragma comment( lib, cvLIB("imgcodecs"))
 			#pragma comment( lib, cvLIB("calib3d"))
 			#pragma comment( lib, cvLIB("ml"))
-			#pragma comment( lib, cvLIB("hal")) 
+			//#pragma comment( lib, cvLIB("hal"))
 		#elif CV_USE_ALL_MODULES
 			#pragma comment( lib, cvLIB("core"))
 			#pragma comment( lib, cvLIB("videoio"))
@@ -101,7 +101,7 @@
             #pragma comment( lib, cvLIB("imgcodecs"))
             #pragma comment( lib, cvLIB("video"))
 		#else
-			#pragma comment( lib, cvLIB("world") )	
+			#pragma comment( lib, cvLIB("world") )
 		#endif
 	#endif
 #endif
